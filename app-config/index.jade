@@ -1,0 +1,47 @@
+include mixins
+include main-mixins
+
+- var hasToolbar = false
+- var entityTypeId = 'PartAvailability'
+
+doctype html
+html
+    head
+        +defaultHead()
+        block head
+
+    body(style="padding-top:20px")
+      div(ng-app='allcount', ng-init="viewState = {mode: 'list', filtering: {}}")
+        .splash(style="padding: 2em 0 2em")
+          .container
+              .row
+                  .col-lg-12(ng-if="!viewState.filtering.textSearch")
+                      span.app-logo
+                          i(class="fa fa-search fa-fw")
+                      h1 МотоStock.ru
+                      h2 Все мотозапчасти в одном месте
+                  .col-lg-12(ng-if="viewState.filtering.textSearch").ng-cloak
+                      h1
+                        i(class="fa fa-search fa-fw")
+                        | МотоStock.ru
+        .container
+          .row.text-center
+            h1(ng-if="!viewState.filtering.textSearch") Найти запчасть в наличии
+            input.form-control.input-lg(style="margin-top: 10px", placeholder="Введите наименование запчасти", ng-model="viewState.filtering.textSearch")
+            div(style="margin-top: 20px", ng-if="viewState.filtering.textSearch")
+              +pagingControl()
+          .screen-container(ng-cloak, ng-if="viewState.filtering.textSearch")
+              +defaultList()(ng-show="items.length")
+                .row(ng-repeat="item in items")
+                  h2.pull-left {{item.name}}
+                  span.text-right
+                    h1 {{(item.price / 100) | currency}}
+                    h3 {{item.provider.name}}
+              +noEntries()
+              +defaultEditAndCreateForms()
+
+        include core-scripts
+        +entityJs()
+
+block js
+    +entityJs()

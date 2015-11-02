@@ -8,6 +8,15 @@ doctype html
 html
     head
         +defaultHead()
+        script.
+          (function(h,o,t,j,a,r){
+              h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+              h._hjSettings={hjid:97335,hjsv:5};
+              a=o.getElementsByTagName('head')[0];
+              r=o.createElement('script');r.async=1;
+              r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+              a.appendChild(r);
+          })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
         block head
 
     body(style="padding-top:20px")
@@ -18,12 +27,12 @@ html
                   .col-lg-12(ng-if="!viewState.filtering.textSearch")
                       span.app-logo
                           i(class="fa fa-search fa-fw")
-                      h1 МотоBog.ru
+                      h1 zrum.ru
                       h2 Все мотозапчасти в одном месте
                   .col-lg-12(ng-if="viewState.filtering.textSearch").ng-cloak
                       h1
                         i(class="fa fa-search fa-fw")
-                        | МотоBog.ru
+                        | zrum.ru
         .container
           .row.text-center: .col-xs-12
             h1(ng-if="!viewState.filtering.textSearch") Найти запчасть в наличии

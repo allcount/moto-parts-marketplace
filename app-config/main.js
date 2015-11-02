@@ -1,7 +1,8 @@
 A.app({
-  appName: "МотоBog.ru",
+  appName: "zrum.ru - Мотозапчасти",
   appIcon: "heart",
   theme: 'cosmic',
+  googleAnalyticsId: 'UA-69614904-1',
   menuItems: [
     {
       name: "Запчасти",

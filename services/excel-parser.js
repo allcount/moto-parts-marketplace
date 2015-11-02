@@ -18,9 +18,11 @@ module.exports = function (Q) {
             return item.name.indexOf('xls') !== -1;
           })
           console.log(item);
+          var getDownloadUrl = 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=' + item.public_key + '&path=' + item.path;
+          console.log(getDownloadUrl);
           return qRequest({
             method: 'GET',
-            url: 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=' + item.public_key + '&path=' + item.path,
+            url: getDownloadUrl,
             json: true
           }).then(function (downloadUrl) {
             console.log(downloadUrl[1]);

@@ -17,6 +17,7 @@ module.exports = function (Q) {
           var item = _.find(resourceUrl[1]._embedded.items, function (item) {
             return item.name.indexOf('xls') !== -1;
           })
+          console.log(item);
           return qRequest({
             method: 'GET',
             url: 'https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=' + item.public_key + '&path=' + item.path,

@@ -1,5 +1,5 @@
 A.app({
-  appName: "MotoStock.ru",
+  appName: "МотоBog.ru",
   appIcon: "heart",
   theme: 'cosmic',
   menuItems: [

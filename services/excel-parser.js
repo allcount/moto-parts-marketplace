@@ -15,7 +15,7 @@ module.exports = function (Q) {
         }).then(function (resourceUrl) {
           console.log(resourceUrl[1]);
           var item = _.find(resourceUrl[1]._embedded.items, function (item) {
-            return item.name.indexOf('Прайс') !== -1;
+            return item.name.indexOf('xls') !== -1;
           })
           return qRequest({
             method: 'GET',

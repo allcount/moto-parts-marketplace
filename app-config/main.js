@@ -1,6 +1,7 @@
 A.app({
   appName: "MotoStock.ru",
   appIcon: "heart",
+  theme: 'cosmic',
   menuItems: [
     {
       name: "Запчасти",
@@ -53,9 +54,10 @@ A.app({
           name: Fields.text("Оригинальное название").required(),
           part: Fields.reference("Запчасть", "Part"),
           provider: Fields.reference("Поставщик", "Provider"),
-          price: Fields.money("Цена")
+          price: Fields.money("Цена"),
+          siteUrl: Fields.text("Сайт")
         },
-        sorting: [['price', 1]],
+        sorting: [['price', 1], ['name', 1]],
         actions: [{
           id: 'reload',
           name: 'Загрузить',
@@ -82,7 +84,10 @@ function loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Conso
     return parts.find({filtering: {provider: provider.id}}).then(function (toDelete) {
       return Q.all(toDelete.map(function (e) { return parts.deleteEntity(e.id) }));
     }).then(function () {
-      return Q.all(availabilities.map(function (a) { return parts.createEntity(a) }))
+      return Q.all(availabilities.map(function (a) {
+        a.siteUrl = provider.siteUrl;
+        return parts.createEntity(a)
+      }))
     });
   })
 }

@@ -25,6 +25,9 @@ A.app({
         fields: {
           name: Fields.text("Наименование").required()
         },
+        permissions: {
+          read: ['admin']
+        },
         referenceName: "name"
       },
       Provider: {
@@ -35,6 +38,9 @@ A.app({
           parseMethod: Fields.text("Метод разбора XLS").required()
         },
         referenceName: "name",
+        permissions: {
+          read: ['admin']
+        },
         actions: [{
           id: 'reload',
           name: 'Загрузить',
@@ -71,7 +77,10 @@ A.app({
               return Actions.refreshResult();
             })
           }
-        }]
+        }],
+        permissions: {
+          write: ['admin']
+        }
       }
     }
   }

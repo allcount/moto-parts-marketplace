@@ -111,7 +111,7 @@ module.exports = function (Q) {
           continue;
         }
         result.push({
-          name: cellValue(5, i),
+          name: cellValue(5, i).replace("[", "").replace("]", ""),
           price: cellValue(7, i)*100,
           provider: provider
         })

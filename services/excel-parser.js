@@ -3,14 +3,14 @@ var XLSX = require('xlsx');
 
 module.exports = function (Q) {
   return {
-    parsePartAvailabilities: function (provider, url) {
+    parsePartAvailabilities: function (provider, url, parseMethod) {
       var self = this;
       return Q.nfcall(request, {
         method: 'GET',
         url: url,
         encoding: null
       }).then(function (res) {
-        return self.parseLbaMoto(provider, res[1]);
+        return self[parseMethod](provider, res[1]);
       })
     },
     parseLbaMoto: function (provider, xlsxBinary) {
@@ -20,7 +20,7 @@ module.exports = function (Q) {
 
       function cellValue(c, r) {
         var cell = worksheet[XLSX.utils.encode_cell({c: c, r: r})];
-        console.log(cell);
+        //console.log(cell);
         return cell && cell.v;
       }
 
@@ -37,14 +37,14 @@ module.exports = function (Q) {
       }
       return result;
     },
-    parseLbaMotoOld: function (provider, xlsxBinary) {
+    parseMrMoto: function (provider, xlsxBinary) {
       var workbook = XLSX.read(xlsxBinary);
       var first_sheet_name = workbook.SheetNames[0];
       var worksheet = workbook.Sheets[first_sheet_name];
 
       function cellValue(c, r) {
         var cell = worksheet[XLSX.utils.encode_cell({c: c, r: r})];
-        console.log(cell);
+        //console.log(cell);
         return cell && cell.v;
       }
 

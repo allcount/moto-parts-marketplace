@@ -40,7 +40,7 @@ html
             div(style="margin-top: 20px", ng-if="viewState.filtering.textSearch")
               +pagingControl()
           .screen-container(ng-cloak, ng-if="viewState.filtering.textSearch")
-              +defaultList()(ng-show="items.length")
+              +defaultList()(ng-show="viewState.paging && viewState.paging.count > 0")
                 .row(ng-repeat="item in items")
                   .col-lg-9.col-md-8
                     h3 {{item.name}}

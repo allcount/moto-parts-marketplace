@@ -7,7 +7,7 @@
   },
   "description": "",
   "dependencies": {
-    "allcountjs": "^1.21.7",
+    "allcountjs": "^1.21.9",
     "request": "^2.65.0",
     "underscore": "^1.8.3",
     "xlsx": "^0.8.0"

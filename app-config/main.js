@@ -37,6 +37,7 @@ A.app({
           name: Fields.text("Название").required(),
           priceUrl: Fields.text("Ссылка на прайс-лист").required(),
           siteUrl: Fields.text("Адрес сайта"),
+          phone: Fields.text("Телефон"),
           parseMethod: Fields.text("Метод разбора XLS").required()
         },
         referenceName: "name",
@@ -47,10 +48,10 @@ A.app({
           id: 'reload',
           name: 'Загрузить',
           actionTarget: 'single-item',
-          perform: function (Crud, Actions, ExcelParser, Console, Q) {
+          perform: function (Crud, Actions, ExcelParser, Console, Q, Pipes) {
             var crud = Crud.actionContextCrud();
             return crud.readEntity(Actions.selectedEntityId()).then(function (provider) {
-              return loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Console, Q);
+              return loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Console, Q, Pipes);
             }).then(function () {
               return Actions.refreshResult();
             });
@@ -63,17 +64,19 @@ A.app({
           part: Fields.reference("Запчасть", "Part"),
           provider: Fields.reference("Поставщик", "Provider"),
           price: Fields.money("Цена"),
-          siteUrl: Fields.text("Сайт")
+          siteUrl: Fields.text("Сайт"),
+          phone: Fields.text("Телефон"),
+          sku: Fields.text("Артикул")
         },
         sorting: [['price', 1], ['name', 1]],
         actions: [{
           id: 'reload',
           name: 'Загрузить',
           actionTarget: 'all-items',
-          perform: function (Crud, Actions, ExcelParser, Console, Q) {
+          perform: function (Crud, Actions, ExcelParser, Console, Q, Pipes) {
             return Crud.crudFor('Provider').find({}).then(function (providers) {
               return Q.all(providers.map(function (provider) {
-                return loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Console, Q);
+                return loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Console, Q, Pipes);
               }))
             }).then(function () {
               return Actions.refreshResult();
@@ -88,17 +91,21 @@ A.app({
   }
 });
 
-function loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Console, Q) {
+function loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Console, Q, Pipes) {
   return ExcelParser.parsePartAvailabilities(provider, provider.priceUrl, provider.parseMethod).then(function (availabilities) {
     var parts = Crud.crudFor('PartAvailability');
 
-    return parts.find({filtering: {provider: provider.id}}).then(function (toDelete) {
-      return Q.all(toDelete.map(function (e) { return parts.deleteEntity(e.id) }));
-    }).then(function () {
-      return Q.all(availabilities.map(function (a) {
-        a.siteUrl = provider.siteUrl;
-        return parts.createEntity(a)
-      }))
+    availabilities = availabilities.map(function (a) {
+      a.siteUrl = provider.siteUrl;
+      a.phone = provider.phone;
+      return a;
     });
+
+    return Pipes.oneWayImportSync(availabilities, 'PartAvailability', {filtering: {provider: provider.id}}, {
+      keyFn: function (i) { return i.name },
+      equals: function (a,b) {
+        return a.price.toString() === b.price.toString() && a.siteUrl === b.siteUrl && a.phone === b.phone;
+      }
+    })
   })
 }

@@ -3,11 +3,12 @@ var XLSX = require('xlsx');
 var _ = require('underscore')
 var querystring = require("querystring");
 
+
 module.exports = function (Q) {
+  var qRequest = Q.nfbind(request);
   return {
     parsePartAvailabilities: function (provider, url, parseMethod) {
       var self = this;
-      var qRequest = Q.nfbind(request);
       if (url.indexOf('https://yadi.sk') !== -1) {
         return qRequest({
           method: 'GET',
@@ -37,6 +38,9 @@ module.exports = function (Q) {
           })
         })
       }
+      if (url.indexOf('mr-moto.ru') !== -1) {
+        return self.extractMrMoto(provider, url, parseMethod);
+      }
       return Q.nfcall(request, {
         method: 'GET',
         url: url,
@@ -44,6 +48,17 @@ module.exports = function (Q) {
       }).then(function (res) {
         console.log(res[0]);
         return self[parseMethod](provider, res[1]);
+      })
+    },
+    extractMrMoto: function (provider, url, parseMethod) {
+      var self = this;
+      return qRequest({method: 'GET', url: url}).then(function (res) {
+        var fileUrl = res[1].match(/\<a\s+href\=\'(.*?)\'(.*?)\>остатки(.*?)\<\/a\>/)[1];
+        console.log(fileUrl);
+        return qRequest({method: 'GET', url: 'http://www.mr-moto.ru' + fileUrl, encoding: null}).then(function (res) {
+          console.log(res[0]);
+          return self[parseMethod](provider, res[1]);
+        })
       })
     },
     parseLbaMoto: function (provider, xlsxBinary) {
@@ -59,13 +74,14 @@ module.exports = function (Q) {
 
       var result = [];
       for (var i = 10; cellValue(3, i); i++) {
-        if (!cellValue(23, i)) {
+        if (!cellValue(23, i) || !cellValue(0, i)) {
           continue;
         }
         result.push({
+          sku: cellValue(0, i),
           name: cellValue(3, i),
           price: cellValue(23, i)*100,
-          provider: provider
+          provider: {id: provider.id, name: provider.name}
         })
       }
       return result;

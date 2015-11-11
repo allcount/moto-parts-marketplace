@@ -43,11 +43,13 @@ html
               +defaultList()(ng-show="viewState.paging && viewState.paging.count > 0")
                 .row(ng-repeat="item in items")
                   .col-lg-9.col-md-8
-                    h3 {{item.name}}
-                    h4: a(ng-href="{{item.siteUrl}}", target="_blank") {{item.provider.name}}
+                    h3: a(ng-href="{{item.siteUrl}}", target="_blank") {{item.name}}
+                    h4 {{item.provider.name}}
                     h4: a(ng-href="tel:{{item.phone}}") {{item.phone}}
                   .col-lg-3.col-md-4.text-right
                     h1 {{(item.price / 100) | currency}}
+                    h3.text-success(ng-if="item.isAvailable") В наличии
+                    h3.text-danger(ng-if="!item.isAvailable") Нет в наличии
                     
               +noEntries()
               +defaultEditAndCreateForms()

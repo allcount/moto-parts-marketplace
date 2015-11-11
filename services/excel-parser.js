@@ -81,7 +81,8 @@ module.exports = function (Q) {
           sku: cellValue(0, i),
           name: cellValue(3, i),
           price: cellValue(23, i)*100,
-          provider: {id: provider.id, name: provider.name}
+          provider: {id: provider.id, name: provider.name},
+          isAvailable: !!cellValue(21, i)
         })
       }
       return result;
@@ -105,7 +106,8 @@ module.exports = function (Q) {
         result.push({
           name: cellValue(0, i),
           price: cellValue(5, i)*100,
-          provider: provider
+          provider: provider,
+          isAvailable: !!cellValue(8, i)
         })
       }
       return result;
@@ -129,7 +131,8 @@ module.exports = function (Q) {
         result.push({
           name: cellValue(5, i).replace("[", "").replace("]", ""),
           price: cellValue(7, i)*100,
-          provider: provider
+          provider: provider,
+          isAvailable: true
         })
       }
       return result;

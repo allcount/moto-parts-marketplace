@@ -4,6 +4,7 @@ var rp = require('request-promise');
 var _ = require('underscore')
 
 module.exports = function (Q) {
+  var pool = {maxSockets: 2};
   return {
     parseLbaMoto: function () {
       var self = this;
@@ -46,7 +47,8 @@ module.exports = function (Q) {
       var self = this;
       return Q(rp({
         url: url,
-        transform: function (body) { return cheerio.load(body) }
+        transform: function (body) { return cheerio.load(body) },
+        pool: pool
       })).catch(function (e) {
         console.error(e);
         if (retries === 0) {

@@ -43,6 +43,66 @@ module.exports = function (Q) {
         })).then(_.flatten);
       })
     },
+    parseMrMoto: function () {
+      var self = this;
+      var entryLink = 'http://www.mr-moto.ru/Netshop/shop/charges/';
+      var rootLink = 'http://www.mr-moto.ru';
+
+      function drillDown(categoriesList, selector) {
+        return Q.all(categoriesList.map(function (categoryUrl) {
+          return self.cheerioRequest(categoryUrl).then(function ($) {
+            var collectHrefs = self.collectHrefs($);
+            return collectHrefs($(selector), rootLink);
+          })
+        })).then(_.flatten);
+      }
+
+      return this.cheerioRequest(entryLink).then(function ($) {
+        var collectHrefs = self.collectHrefs($);
+        var categoriesList = collectHrefs($('.divmenu1 a'), rootLink);
+        console.log(categoriesList.join("\n"));
+        return drillDown(categoriesList, '.divmenu2 a').then(function (secondList) {
+          return drillDown(secondList, '.divmenu3 a').then(function (thirdList) {
+            return _.unique(_.union(categoriesList, secondList, thirdList));
+          })
+        }).then(function (allCategories) {
+          console.log(allCategories.join("\n"));
+          //allCategories = _.take(allCategories, 10); //TODO
+          return Q.all(allCategories.map(function (categoryLink) {
+            var categoryUrl = categoryLink + '?portion=-1';
+            return self.cheerioRequest(categoryUrl).then(function ($) {
+              console.log('Scraping: ' + categoryUrl);
+              return _.filter($('.tovblock').map(function () {
+                var link = $($('a', $(this))[1]);
+                var priceBlock = $($('div', link)[1]);
+                if (!priceBlock || !priceBlock.text()) {
+                  return;
+                }
+                var priceMatch = priceBlock.text().trim();
+                if (!priceMatch) {
+                  return;
+                }
+                return {
+                  name: $($('div', link)[0]).text().trim(),
+                  siteUrl: rootLink + link.attr('href'),
+                  price: parseInt(priceMatch) * 100
+                };
+              }).get(), _.identity);
+            })
+          })).then(_.flatten);
+        })
+      });
+    },
+    collectHrefs: function ($) {
+      return function ($el, root) {
+        return _.unique(_.filter($el.map(function (i, el) {
+          if ($(this).attr('href').indexOf('/') !== 0) {
+            return;
+          }
+          return (root || '') + $(this).attr('href');
+        }).get(), _.identity));
+      }
+    },
     cheerioRequest: function (url, retries) {
       var self = this;
       return Q(rp({

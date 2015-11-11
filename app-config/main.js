@@ -66,13 +66,14 @@ A.app({
               return Scraper[provider.parseMethod]().then(function (result) {
                 result.forEach(function (item) {
                   item.provider = provider;
+                  item.phone = provider.phone;
                 })
                 Console.log("Syncing " + result.length + " items for " + provider.name);
                 var crud = Crud.crudFor('PartAvailability');
                 return Pipes.oneWayImportSync(result, 'PartAvailability', {filtering: {provider: provider.id}}, {
                   keyFn: function (i) { return i.name },
                   equals: function (a,b) {
-                    return a.siteUrl === b.siteUrl && a.name === b.name && a.price.toString() === b.price.toString();
+                    return a.siteUrl === b.siteUrl && a.name === b.name && a.price.toString() === b.price.toString() && a.phone === b.phone;
                   }
                 })
               }).then(function () {
@@ -121,16 +122,16 @@ function loadAvailabilityForProvider(provider, Crud, Actions, ExcelParser, Conso
   return ExcelParser.parsePartAvailabilities(provider, provider.priceUrl, provider.parseMethod).then(function (availabilities) {
     var partsCrud = Crud.crudFor('PartAvailability');
 
-    availabilities = availabilities.map(function (a) {
-      a.phone = provider.phone;
-      return a;
-    });
-
     Console.log("Syncing " + availabilities.length + " items for " + provider.name);
     return Pipes.oneWayImportSync(availabilities, 'PartAvailability', {filtering: {provider: provider.id}}, {
       keyFn: function (i) { return i.name },
       equals: function (a,b) {
-        return a.price.toString() === b.price.toString() && a.phone === b.phone && a.isAvailable === b.isAvailable;
+        return a.price.toString() === b.price.toString() && a.isAvailable === b.isAvailable;
+      },
+      writeCrud: {
+        createEntity: function () {},
+        deleteEntity: function () {},
+        updateEntity: partsCrud.updateEntity
       }
     }).then(function () {
       Console.log("Sync finished");

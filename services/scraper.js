@@ -93,10 +93,63 @@ module.exports = function (Q) {
         })
       });
     },
+    parseDriveBike: function () {
+      var self = this;
+      var entryLink = 'http://www.drivebike.ru/zapchasti';
+
+      return this.cheerioRequest(entryLink).then(function ($) {
+        var collectHrefs = self.collectHrefs($);
+        var categoriesList = collectHrefs($('.amshopby-cat-level-1 a'));
+        console.log(categoriesList.join("\n"));
+        return categoriesList;
+      }).then(function (allCategories) {
+        console.log(allCategories.join("\n"));
+        allCategories = _.unique(allCategories);
+        //allCategories = _.take(allCategories, 0); //TODO
+        return Q.all(allCategories.map(function (categoryLink) {
+          var categoryUrl = categoryLink + '?limit=60&mode=grid';
+
+          function scrapePage(pageUrl) {
+            return self.cheerioRequest(pageUrl).then(function ($) {
+              console.log('Scraping: ' + pageUrl);
+              var itemsOnPage = _.filter($('li.item').map(function () {
+                var link = $('.product-name a', $(this));
+                var priceBlock = $('.price-box .regular-price, .price-box .special-price', $(this));
+                if (!priceBlock || !priceBlock.text()) {
+                  return;
+                }
+                var priceMatch = priceBlock.text().trim().replace(/\s/g, '').match(/(\d+)/);
+                if (!priceMatch) {
+                  return;
+                }
+                var manufacturer = $('.manufacturer-name', $(this));
+                return {
+                  name: ((manufacturer && manufacturer.text().trim() + ' ') || '') + link.text().trim(),
+                  siteUrl: link.attr('href'),
+                  price: parseInt(priceMatch[1]) * 100
+                };
+              }).get(), _.identity);
+              var nextPage = $('a.i-next');
+              if (!nextPage || !nextPage.attr('href')) {
+                return itemsOnPage;
+              }
+              return scrapePage(nextPage.attr('href')).then(function (nextPageItems) {
+                return _.union(itemsOnPage, nextPageItems);
+              })
+            })
+          }
+
+          return scrapePage(categoryUrl);
+
+        })).then(_.flatten).then(function (items) {
+          return _.unique(items, _.property('name'));
+        });
+      });
+    },
     collectHrefs: function ($) {
       return function ($el, root) {
         return _.unique(_.filter($el.map(function (i, el) {
-          if ($(this).attr('href').indexOf('/') !== 0) {
+          if (root && $(this).attr('href').indexOf('/') !== 0) {
             return;
           }
           return (root || '') + $(this).attr('href');

@@ -8,19 +8,10 @@ doctype html
 html
     head
         +defaultHead()
-        script.
-          (function(h,o,t,j,a,r){
-              h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-              h._hjSettings={hjid:97335,hjsv:5};
-              a=o.getElementsByTagName('head')[0];
-              r=o.createElement('script');r.async=1;
-              r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-              a.appendChild(r);
-          })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
         block head
 
     body(style="padding-top:20px")
-      div(ng-app='allcount', ng-init="viewState = {mode: 'list', filtering: {}}")
+      div(ng-app='allcount', ng-init="viewState = {mode: 'list', filtering: {}}", ng-controller="SearchController")
         .splash(style="padding: 2em 0 2em; background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/splash.jpg');background-position-y: -700px;background-position-x: center;")
           .container
               .row
@@ -43,11 +34,11 @@ html
               +defaultList()(ng-show="viewState.paging && viewState.paging.count > 0")
                 .row(ng-repeat="item in items")
                   .col-lg-9.col-md-8
-                    h3: a(ng-href="{{item.siteUrl}}", target="_blank") {{item.name}}
+                    h3: a(ng-href="{{item.siteUrl}}", target="_blank", ng-click="trackNavigate(item)") {{item.name}}
                     h4 {{item.provider.name}}
-                    h4: a(ng-href="tel:{{item.phone}}") {{item.phone}}
+                    h4: a(ng-href="tel:{{item.phone}}", ng-click="callItem(item)") {{item.phone}}
                   .col-lg-3.col-md-4.text-right
-                    h1 {{(item.price / 100) | currency}}
+                    h2 {{(item.price / 100) | currency}}
                     h3.text-success(ng-if="item.isAvailable") В наличии
                     h3.text-danger(ng-if="!item.isAvailable") Нет в наличии
                     
@@ -57,6 +48,26 @@ html
 
     include core-scripts
     script.
-      allcountModule.config(["$locationProvider", function ($locationProvider) {
+      angular.module('allcount').config(["$locationProvider", function ($locationProvider) {
         $locationProvider.html5Mode({enabled: false});
+      }]);
+      
+      angular.module('allcount').controller('SearchController', ['$scope', function ($scope) {
+        $scope.$watch('viewState.filtering.textSearch', function (textSearch) {
+          lc.track('search', {query: textSearch});
+        })
+        
+        $scope.$watch('viewState.paging.count', function (count) {
+            if (count === 0 && $scope.viewState && $scope.viewState.filtering && $scope.viewState.filtering.textSearch) {
+              lc.track('not-found', {query: $scope.viewState.filtering.textSearch});
+            }
+        })
+        
+        $scope.trackNavigate = function (item) {
+          lc.track('navigate', {item: item});
+        }
+        
+        $scope.callItem = function (item) {
+          lc.track('call', {item: item});
+        }
       }]);

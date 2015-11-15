@@ -3,7 +3,6 @@ A.app({
   appIcon: "heart",
   theme: 'cosmic',
   forceLocale: 'ru',
-  googleAnalyticsId: 'UA-69614904-1',
   menuItems: [
     {
       name: "Запчасти",
